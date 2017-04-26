@@ -1,4 +1,46 @@
 #!/bin/bash -x
+    MYDIR="$(dirname "$0")"
+    PYTHONSCRIPT="$MYDIR/parsesf.py"
+
+	azure telemetry --disable
+	azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
+
+	# KAFKA_BROKER_ID is the last digit of Fabric_NodeName
+	export KAFKA_BROKER_ID=${Fabric_NodeName##*_}
+	export KAFKA_ADVERTISED_HOST_NAME=${Fabric_NodeIPOrFQDN}
+	echo "KAFKA_BROKER_ID set to " ${KAFKA_BROKER_ID}
+	
+	# find all zookeeper instances
+	servicersolve=$(azure servicefabric service resolve --service-name ${Fabric_ApplicationName}/zookeeper1)
+	#echo azure output ${servicersolve}
+	
+	partitionId=$(python $PYTHONSCRIPT getPartitionId "$servicersolve")
+	
+	echo python getpartitionId ${partitionId}
+	
+	replicaResult=$(azure servicefabric replica show --partition-id ${partitionId})
+	echo get replicaResult ${replicaResult}
+	
+	keyvaluepair=''
+	while true; do
+		keyvaluepair=$(python $PYTHONSCRIPT setZookerIP "$replicaResult" $ZOOKEEPER_INSTANCECOUNT 2)
+		if [ "$keyvaluepair" = "Not Ready" ]
+		then
+			sleep 1s
+		else
+			break
+		fi
+	done
+	
+	declare -A vars=( )
+	for kvp in $keyvaluepair; do
+		set -- `echo $kvp | tr '=' ' '`
+		key=$1
+		value=$2
+		vars[${key}]=${value}
+		declare ${key}=${value}
+		echo ${key} "=" ${value}
+	done
 
 # If a ZooKeeper container is linked with the alias `zookeeper`, use it.
 # You MUST set ZOOKEEPER_IP in env otherwise.

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServiceManifest Name="HelloworldManifest" Version="1.0" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Description>Hello world service</Description>
+    <ServiceTypes>
+        <StatelessServiceType ServiceTypeName="HelloServiceType"  UseImplicitHost="true"/>
+    </ServiceTypes>
+    <CodePackage Name="Hello.Code" Version="1.0">
+        <EntryPoint>
+          <ContainerHost>
+            <ImageName>hello-world:latest</ImageName>
+            <Commands></Commands>
+          </ContainerHost>
+        </EntryPoint>
+    </CodePackage>
+  <Resources>
+  </Resources>
+</ServiceManifest>

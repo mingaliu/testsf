@@ -3,8 +3,51 @@
 # Fail hard and fast
 set -eo pipefail
 
-ZOOKEEPER_ID=${ZOOKEEPER_ID:-1}
-echo "ZOOKEEPER_ID=$ZOOKEEPER_ID"
+#ZOOKEEPER_ID=${ZOOKEEPER_ID:-1}
+#echo "ZOOKEEPER_ID=$ZOOKEEPER_ID"
+
+	MYDIR="$(dirname "$0")"
+	PYTHONSCRIPT="$MYDIR/parsesf.py"
+
+    azure telemetry --disable
+    azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
+
+    # ZOOKEEPER_ID is the last digit of Fabric_NodeName
+    export ZOOKEEPER_ID=${Fabric_NodeName##*_}
+    echo "ZOOKEEPER_ID set to " ${ZOOKEEPER_ID}
+
+    # find all zookeeper instances
+    servicersolve=$(azure servicefabric service resolve --service-name ${Fabric_ApplicationName}/zookeeper1)
+    #echo azure output ${servicersolve}
+    
+    partitionId=$(python $PYTHONSCRIPT getPartitionId "$servicersolve")
+    
+    echo python getpartitionId ${partitionId}
+    
+    replicaResult=$(azure servicefabric replica show --partition-id ${partitionId})
+    #echo python getpartitionId ${replicaResult}
+
+    keyvaluepair=''
+    while true; do
+        keyvaluepair=$(python $PYTHONSCRIPT setZookerIP "$replicaResult" $ZOOKEEPER_INSTANCECOUNT 1)
+        if [ "$keyvaluepair" = "Not Ready" ]
+        then
+            sleep 1s
+        else
+            break
+        fi
+    done
+    
+    declare -A vars=( )
+    for kvp in $keyvaluepair; do
+        set -- `echo $kvp | tr '=' ' '`
+        key=$1
+        value=$2
+        vars[${key}]=${value}
+        declare ${key}=${value}
+        echo ${key} "=" ${value}
+    done
+    
 
 echo $ZOOKEEPER_ID > /var/lib/zookeeper/myid
 
@@ -35,11 +78,11 @@ ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL=${ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL:-0}
 echo "autopurge.purgeInterval=${ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL}" >> /opt/zookeeper/conf/zoo.cfg
 echo "autopurge.purgeInterval=${ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL}"
 
-for VAR in `env`
+for VAR in "${!vars[@]}" 
 do
-  if [[ $VAR =~ ^ZOOKEEPER_SERVER_[0-9]+= ]]; then
-    SERVER_ID=`echo "$VAR" | sed -r "s/ZOOKEEPER_SERVER_(.*)=.*/\1/"`
-    SERVER_IP=`echo "$VAR" | sed 's/.*=//'`
+  if [[ $VAR =~ ^ZOOKEEPER_SERVER_.* ]]; then
+	SERVER_ID=${VAR##*_}
+    SERVER_IP=${vars[$VAR]}
     if [ "${SERVER_ID}" = "${ZOOKEEPER_ID}" ]; then
       echo "server.${SERVER_ID}=0.0.0.0:2888:3888" >> /opt/zookeeper/conf/zoo.cfg
       echo "server.${SERVER_ID}=0.0.0.0:2888:3888"

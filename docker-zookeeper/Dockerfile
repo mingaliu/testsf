@@ -27,4 +27,15 @@ EXPOSE 2181 2888 3888
 
 VOLUME ["/opt/zookeeper/conf", "/var/lib/zookeeper"]
 
+RUN apk add --update python py-pip python-dev make g++
+
+ENV NODEJS_VERSION=5.6.0 \
+    NODEJS_SHA256=3af2cc5e5970afc83e59f2065fea2e2df846a544a100cd3c0527f0db05bec27f \
+    NPM_VERSION=3.7.1
+
+RUN apk add --update nodejs
+
+RUN npm install --global azure-cli@0.10.12 && \
+	azure
+
 ENTRYPOINT ["/usr/local/sbin/start.sh"]

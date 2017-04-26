@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ServiceManifest Name="KafkaServiceManifest" Version="1.2" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ServiceManifest Name="KafkaServiceManifest" Version="1.0" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Description>Kafka Service</Description>
     <ServiceTypes>
         <StatelessServiceType ServiceTypeName="KafkaServiceType"  UseImplicitHost="true"/>
     </ServiceTypes>
-    <CodePackage Name="Kafka.Code" Version="1.2">
+    <CodePackage Name="Kafka.Code" Version="1.0">
         <EntryPoint>
           <ContainerHost>
-            <ImageName>mingaliu/kafka:0419</ImageName>
+            <ImageName>mingaliu/kafka:0424</ImageName>
             <Commands></Commands>
           </ContainerHost>
         </EntryPoint>
-      <EnvironmentVariables>
-        <EnvironmentVariable Name="KAFKA_ADVERTISED_HOST_NAME" Value=""/>
-        <EnvironmentVariable Name="ZOOKEEPER_IP" Value=""/>
+	  <EnvironmentVariables>
+        <EnvironmentVariable Name="ZOOKEEPER_INSTANCECOUNT" Value=""/>
       </EnvironmentVariables>
     </CodePackage>
     <ConfigPackage Name="Kafka.Config" Version="1.0" />

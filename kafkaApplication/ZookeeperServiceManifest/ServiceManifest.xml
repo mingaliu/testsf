@@ -7,14 +7,13 @@
     <CodePackage Name="Zookeeper.Code" Version="1.0">
         <EntryPoint>
           <ContainerHost>
-            <ImageName>digitalwonderland/zookeeper:latest</ImageName>
+            <ImageName>mingaliu/zookeeper:0425</ImageName>
             <Commands></Commands>
           </ContainerHost>
         </EntryPoint>
-		<EnvironmentVariables>
-			<EnvironmentVariable Name="ZOOKEEPER_ID" Value=""/>
-			<EnvironmentVariable Name="ZOOKEEPER_SERVER_1" Value=""/>
-		</EnvironmentVariables>		
+	  <EnvironmentVariables>
+        <EnvironmentVariable Name="ZOOKEEPER_INSTANCECOUNT" Value="3"/>
+      </EnvironmentVariables>
     </CodePackage>
     <ConfigPackage Name="Zookeeper.Config" Version="1.0" />
     <DataPackage Name="Zookeeper.Data" Version="1.0" />

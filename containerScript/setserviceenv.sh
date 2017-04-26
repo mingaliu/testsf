@@ -6,7 +6,8 @@
  export Fabric_NodeIPOrFQDN=10.0.1.4
  export Fabric_NodeName=_backend_1
  export Fabric_ApplicationName=fabric:/tenantA/KafkaApp
-
+ export ZOOKEEPER_INSTANCECOUNT=1
+ 
 serviceName=$1
 
 echo "serviceName=" ${serviceName}
@@ -16,7 +17,10 @@ echo "start connect" ${Fabric_NodeIPOrFQDN}
 
 if [ "$serviceName" = "zookeeper" ] 
 then
-	zookerInstanceCount=1
+    MYDIR="$(dirname "$0")"
+    PYTHONSCRIPT="$MYDIR/parsesf.py"
+
+    azure telemetry --disable
 	azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
 
 	# ZOOKEEPER_ID is the last digit of Fabric_NodeName
@@ -27,7 +31,7 @@ then
 	servicersolve=$(azure servicefabric service resolve --service-name ${Fabric_ApplicationName}/zookeeper1)
 	#echo azure output ${servicersolve}
 	
-	partitionId=$(python parsesf.py getPartitionId "$servicersolve")
+	partitionId=$(python $PYTHONSCRIPT getPartitionId "$servicersolve")
 	
 	echo python getpartitionId ${partitionId}
 	
@@ -36,7 +40,7 @@ then
 
 	keyvaluepair=''
 	while true; do
-		keyvaluepair=$(python parsesf.py setZookerIP "$replicaResult" $zookerInstanceCount 1)
+		keyvaluepair=$(python $PYTHONSCRIPT setZookerIP "$replicaResult" $ZOOKEEPER_INSTANCECOUNT 1)
 		if [ "$keyvaluepair" = "Not Ready" ]
 		then
 			sleep 1s
@@ -58,7 +62,10 @@ then
 
 elif  [ "$serviceName" = "kafka" ] 
 then
-	zookerInstanceCount=1
+    MYDIR="$(dirname "$0")"
+    PYTHONSCRIPT="$MYDIR/parsesf.py"
+
+    azure telemetry --disable
 	azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
 
 	# KAFKA_BROKER_ID is the last digit of Fabric_NodeName
@@ -70,14 +77,23 @@ then
 	servicersolve=$(azure servicefabric service resolve --service-name ${Fabric_ApplicationName}/zookeeper1)
 	#echo azure output ${servicersolve}
 	
-	partitionId=$(python parsesf.py getPartitionId "$servicersolve")
+	partitionId=$(python $PYTHONSCRIPT getPartitionId "$servicersolve")
 	
 	echo python getpartitionId ${partitionId}
 	
 	replicaResult=$(azure servicefabric replica show --partition-id ${partitionId})
 	echo get replicaResult ${replicaResult}
 	
-	keyvaluepair=$(python parsesf.py setZookerIP "$replicaResult" $zookerInstanceCount 2)
+	keyvaluepair=''
+	while true; do
+		keyvaluepair=$(python $PYTHONSCRIPT setZookerIP "$replicaResult" $ZOOKEEPER_INSTANCECOUNT 2)
+		if [ "$keyvaluepair" = "Not Ready" ]
+		then
+			sleep 1s
+		else
+			break
+		fi
+	done
 	
 	declare -A vars=( )
 	for kvp in $keyvaluepair; do
