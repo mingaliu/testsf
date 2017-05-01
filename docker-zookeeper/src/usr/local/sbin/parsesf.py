@@ -47,7 +47,10 @@ def getPartitionId(serviceresolveResult):
 def findNodeId(jsonstring, pos):
 	nodename= getJsonProperty(jsonstring, 'nodeName', pos)
 	lastunderscore=nodename.rfind('_')
-	return nodename[lastunderscore+1:]
+	nodeid=nodename[lastunderscore+1:]
+	if nodename[lastunderscore-1].isdigit():
+		nodeid=nodename[lastunderscore-1]+nodeid	
+	return nodeid
 	
 def findAllNodeIP(jsonstring):
 	allnodes = []

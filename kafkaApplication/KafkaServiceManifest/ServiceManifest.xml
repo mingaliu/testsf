@@ -7,7 +7,7 @@
     <CodePackage Name="Kafka.Code" Version="1.0">
         <EntryPoint>
           <ContainerHost>
-            <ImageName>mingaliu/kafka:0424</ImageName>
+            <ImageName>mingaliu/kafka:0428</ImageName>
             <Commands></Commands>
           </ContainerHost>
         </EntryPoint>

@@ -6,7 +6,18 @@
 	azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
 
 	# KAFKA_BROKER_ID is the last digit of Fabric_NodeName
-	export KAFKA_BROKER_ID=${Fabric_NodeName##*_}
+	NUMBER1=${Fabric_NodeName##*_}
+	REMOVEUNDER=${Fabric_NodeName%_*}
+	NUMBER2=${REMOVEUNDER: -1}
+	    
+	regulare='^[0-9]+$'
+	if ! [[ $NUMBER2 =~ $regulare ]] ; 
+	then
+		export KAFKA_BROKER_ID=$NUMBER1
+	else
+		export KAFKA_BROKER_ID=$NUMBER2$NUMBER1
+	fi
+	
 	export KAFKA_ADVERTISED_HOST_NAME=${Fabric_NodeIPOrFQDN}
 	echo "KAFKA_BROKER_ID set to " ${KAFKA_BROKER_ID}
 	

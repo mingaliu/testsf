@@ -7,7 +7,7 @@
     <CodePackage Name="Zookeeper.Code" Version="1.0">
         <EntryPoint>
           <ContainerHost>
-            <ImageName>mingaliu/zookeeper:0425</ImageName>
+            <ImageName>mingaliu/zookeeper:0429</ImageName>
             <Commands></Commands>
           </ContainerHost>
         </EntryPoint>

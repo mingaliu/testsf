@@ -13,8 +13,19 @@ set -eo pipefail
     azure servicefabric cluster connect http://${Fabric_NodeIPOrFQDN}:19080
 
     # ZOOKEEPER_ID is the last digit of Fabric_NodeName
-    export ZOOKEEPER_ID=${Fabric_NodeName##*_}
-    echo "ZOOKEEPER_ID set to " ${ZOOKEEPER_ID}
+    NUMBER1=${Fabric_NodeName##*_}
+	REMOVEUNDER=${Fabric_NodeName%_*}
+	NUMBER2=${REMOVEUNDER: -1}
+	
+	regulare='^[0-9]+$'
+	if ! [[ $NUMBER2 =~ $regulare ]] ; 
+	then
+		ZOOKEEPER_ID=$NUMBER1
+	else
+		ZOOKEEPER_ID=$NUMBER2$NUMBER1
+	fi
+	
+	echo "ZOOKEEPER_ID set to " ${ZOOKEEPER_ID}  
 
     # find all zookeeper instances
     servicersolve=$(azure servicefabric service resolve --service-name ${Fabric_ApplicationName}/zookeeper1)

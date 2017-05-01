@@ -40,11 +40,9 @@
   <ServiceTemplates>
        <StatelessService ServiceTypeName="ZookeeperServiceType" InstanceCount="[ZookeeperInstanceCount]">
            <SingletonPartition />
-           <PlacementConstraints>(NodeTypeName==worker)</PlacementConstraints>        
 	   </StatelessService>
       <StatelessService ServiceTypeName="KafkaServiceType" InstanceCount="[KafkaInstanceCount]" >
 		   <SingletonPartition/>
-           <PlacementConstraints>(NodeTypeName==worker)</PlacementConstraints>        
       </StatelessService>
   </ServiceTemplates>  
 </ApplicationManifest>
