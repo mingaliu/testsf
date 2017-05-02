@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApplicationManifest ApplicationTypeName="SparkApplication" ApplicationTypeVersion="1.0" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Description>Spark service container Application</Description>
+    <Parameters>
+        <Parameter Name="SparkWorkerInstanceCount" DefaultValue="10"></Parameter>
+        <Parameter Name="SparkMasterInstanceCount" DefaultValue="1"></Parameter>
+    </Parameters>
+    <ServiceManifestImport>
+      <ServiceManifestRef ServiceManifestName="SparkMasterServiceManifest" ServiceManifestVersion="1.0"/>
+       <EnvironmentOverrides CodePackageRef="SparkMaster.Code">
+        <EnvironmentVariable Name="SPARK_CONF_DIR" Value="/conf"/>
+        <EnvironmentVariable Name="SPARK_MASTER_HOST" Value="0.0.0.0"/>
+        <EnvironmentVariable Name="SPARK_LOCAL_IP" Value="0.0.0.0"/>
+        <EnvironmentVariable Name="MASTERORSLAVE" Value="org.apache.spark.deploy.master.Master"/>
+      </EnvironmentOverrides>
+     <Policies>
+      <ContainerHostPolicies CodePackageRef="SparkMaster.Code">
+        <PortBinding ContainerPort="4040" EndpointRef="Endpoint1"/>
+        <PortBinding ContainerPort="8080" EndpointRef="Endpoint2"/>
+        <PortBinding ContainerPort="7077" EndpointRef="Endpoint3"/>
+        <PortBinding ContainerPort="6066" EndpointRef="Endpoint4"/>
+      </ContainerHostPolicies>
+    </Policies>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+	<ServiceManifestRef ServiceManifestName="SparkWorkerServiceManifest" ServiceManifestVersion="1.0"/>
+    <EnvironmentOverrides CodePackageRef="SparkWorker.Code">
+        <EnvironmentVariable Name="SPARK_CONF_DIR" Value="/conf"/>
+        <EnvironmentVariable Name="MASTERORSLAVE" Value="org.apache.spark.deploy.worker.Worker"/>
+	</EnvironmentOverrides>
+    <Policies>
+      <ContainerHostPolicies CodePackageRef="SparkWorker.Code">
+        <PortBinding ContainerPort="8081" EndpointRef="Endpoint1"/>
+      </ContainerHostPolicies>
+     </Policies>
+  </ServiceManifestImport>
+  <ServiceTemplates>
+       <StatelessService ServiceTypeName="SparkMasterServiceType" InstanceCount="[SparkMasterInstanceCount]">
+           <SingletonPartition />
+	   </StatelessService>
+      <StatelessService ServiceTypeName="SparkWorkerServiceType" InstanceCount="[SparkWorkerInstanceCount]" >
+		   <SingletonPartition/>
+      </StatelessService>
+  </ServiceTemplates>  
+</ApplicationManifest>
