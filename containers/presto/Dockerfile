@@ -42,9 +42,16 @@ RUN chmod +x presto-*executable.jar \
 VOLUME ["$PRESTO_HOME/etc", "$PRESTO_HOME/data"]
 
 #3. HDI integration layer
+# Add Tini
+ENV TINI_VERSION v0.14.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+	
 ADD ./src /
 RUN chmod +x /start.sh
 
 WORKDIR /usr/local/presto
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/tini", "--"]
+# Run your program under Tini
+CMD ["/start.sh"]

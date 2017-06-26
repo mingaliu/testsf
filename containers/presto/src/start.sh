@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 _log() {
   [[ "$2" ]] && echo "[`date +'%Y-%m-%d %H:%M:%S.%N'`] - $1 - $2"
@@ -95,11 +96,32 @@ setup_config() {
   fi
 }
 
+pid=0
+
 start_presto() {
-	/usr/local/presto/bin/launcher run
+	# run in background
+	/usr/local/presto/bin/launcher run &
+	pid="$!"
+
+	# wait forever
+	while true
+	do
+		tail -f /dev/null & wait ${!}
+	done
+}
+
+# SIGTERM -handler
+term_handler() {
+  echo "receive termination handler"
+  if [ $pid -ne 0 ]; then
+    kill -SIGTERM "$pid"
+    wait "$pid"
+  fi
+  exit 143; # 128 + 15 -- SIGTERM
 }
 
 main() {
+  trap 'kill ${!}; term_handler' SIGTERM
   validate_env
   setup_env
   setup_config
